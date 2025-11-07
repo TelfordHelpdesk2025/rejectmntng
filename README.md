@@ -24,7 +24,7 @@ npm install
 composer require "maatwebsite/excel:^3.1"
 ```
 
-### 3. laravel pdf
+### 4. laravel pdf
 
 ```bash
 composer require barryvdh/laravel-dompdf
