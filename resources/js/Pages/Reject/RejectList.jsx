@@ -109,13 +109,15 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
         const formData = new FormData();
         formData.append("file", selectedFile);
 
+        
+
         try {
-            await axios.post(route("reject.import"), formData, {
+            const response = await axios.post(route("reject.import"), formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
 
             setAlertType("success");
-            setAlertMessage("✅ File imported successfully!");
+            setAlertMessage(`✅ File imported successfully! ${response.data.duplicateCount ?? 0} duplicate rows skipped.`);
             setSelectedFile(null);
 
             // Auto close after 2s

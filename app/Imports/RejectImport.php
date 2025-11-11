@@ -15,60 +15,56 @@ class RejectImport implements ToCollection
         $user = session('emp_data')['emp_name'] ?? Auth::user()->name ?? 'Unknown User';
         $now = Carbon::now();
 
-        foreach ($rows->skip(1) as $row) { // skip header row
-            $lotId = trim($row[1]); // Use as unique identifier
+        $duplicateCount = 0;
 
-            if (empty($lotId)) {
-                continue; // skip rows without lot_id
-            }
+        foreach ($rows->skip(1) as $row) {
+            $lotId = trim($row[1]);
 
-            // Check if record already exists
-            $existing = DB::table('reject_tbl_list')
-                ->where('lot_id', $lotId)
-                ->first();
+            if (empty($lotId)) continue;
+
+            $existing = DB::table('reject_tbl_list')->where('lot_id', $lotId)->first();
+
+            $data = [
+                'part_name' => $row[0],
+                'qty' => $row[2],
+                'lot_type' => $row[3],
+                'station' => $row[4],
+                'prod_area' => $row[5],
+                'focus_group' => $row[6],
+                'package_name' => $row[7],
+                'lead_count' => $row[8],
+                'lot_status' => $row[9],
+                'sldt' => $row[10],
+                'strategy_code' => $row[11],
+                'stage_run_days' => $row[12],
+                'lot_entry_time_days' => $row[13],
+            ];
 
             if ($existing) {
-                // 🔹 Update existing record
-                DB::table('reject_tbl_list')
-                    ->where('lot_id', $lotId)
-                    ->update([
-                        'part_name' => $row[0],
-                        'qty' => $row[2],
-                        'lot_type' => $row[3],
-                        'station' => $row[4],
-                        'prod_area' => $row[5],
-                        'focus_group' => $row[6],
-                        'package_name' => $row[7],
-                        'lead_count' => $row[8],
-                        'lot_status' => $row[9],
-                        'sldt' => $row[10],
-                        'strategy_code' => $row[11],
-                        'stage_run_days' => $row[12],
-                        'lot_entry_time_days' => $row[13],
-                        'updated_by' => $user,
-                        'updated_date' => $now,
-                    ]);
+                $isDifferent = false;
+                foreach ($data as $key => $value) {
+                    if ($existing->$key != $value) {
+                        $isDifferent = true;
+                        break;
+                    }
+                }
+
+                if ($isDifferent) {
+                    $data['updated_by'] = $user;
+                    $data['updated_date'] = $now;
+                    DB::table('reject_tbl_list')->where('lot_id', $lotId)->update($data);
+                } else {
+                    $duplicateCount++; // ❗ Count duplicate rows that are exactly the same
+                }
             } else {
-                // 🔹 Insert new record
-                DB::table('reject_tbl_list')->insert([
-                    'part_name' => $row[0],
-                    'lot_id' => $row[1],
-                    'qty' => $row[2],
-                    'lot_type' => $row[3],
-                    'station' => $row[4],
-                    'prod_area' => $row[5],
-                    'focus_group' => $row[6],
-                    'package_name' => $row[7],
-                    'lead_count' => $row[8],
-                    'lot_status' => $row[9],
-                    'sldt' => $row[10],
-                    'strategy_code' => $row[11],
-                    'stage_run_days' => $row[12],
-                    'lot_entry_time_days' => $row[13],
-                    'uploaded_by' => $user,
-                    'uploaded_date' => $now,
-                ]);
+                $data['lot_id'] = $lotId;
+                $data['uploaded_by'] = $user;
+                $data['uploaded_date'] = $now;
+                DB::table('reject_tbl_list')->insert($data);
             }
         }
+
+        // Optional: return count to frontend
+        return $duplicateCount;
     }
 }

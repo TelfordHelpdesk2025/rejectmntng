@@ -24,11 +24,15 @@ npm install
 composer require "maatwebsite/excel:^3.1"
 ```
 
-### 3. laravel pdf
+### 4. laravel pdf
 
-```bash
+````bash
 composer require barryvdh/laravel-dompdf
-```
+composer npm install recharts
+composer npm install jspdf dom-to-image
+composer npm install dom-to-image-more
+composer npm install jspdf jspdf-autotable
+composer composer require guzzlehttp/guzzle
 
 ---
 
@@ -38,7 +42,7 @@ Copy the example environment file and set the required variables (duplicate and 
 
 ```bash
 cp .env.example .env
-```
+````
 
 Then generate the application key:
 

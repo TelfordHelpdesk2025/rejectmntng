@@ -23,19 +23,31 @@ export default function NavLinks() {
                         href: route("reject.index"),
                         label: "Reject List",
                     },
+                    // {
+                    //     href: route("data.filter"),
+                    //     label: "Data Filter & Export",
+                    // },
                 ]}
                 
             />
 
-            {/* {["Quality Assurance"].includes(emp_data?.emp_dept) && ["Senior QA Supervisor", "QA Supervisor", "QA Section Head", "QA Sr. Section Head", "QA Manager"].includes(emp_data?.emp_jobtitle) &&(
+                <div>
+                    <SidebarLink
+                        href={route("reject.summary.index")}
+                        label="Summary Export"
+                        icon={<i className="fa-solid fa-file-export"></i>}
+                    />
+                </div>
+
+            {["superadmin", "admin"].includes(emp_data?.emp_system_role) && ["1328", "139"] .includes(emp_data?.emp_id) && (
                 <div>
                     <SidebarLink
                         href={route("admin")}
-                        label="Administrators"
+                        label="RJ Controllers"
                         icon={<i className="fa-solid fa-users-gear"></i>}
                     />
                 </div>
-            )} */}
+            )}
         </nav>
     );
 }

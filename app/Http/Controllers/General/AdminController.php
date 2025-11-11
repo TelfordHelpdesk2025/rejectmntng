@@ -53,20 +53,58 @@ class AdminController extends Controller
 
     public function index_addAdmin(Request $request)
     {
+        $adminEmpIDs = DB::connection('mysql')->table('admin')->pluck('emp_id')->toArray();
+
         $result = $this->datatable->handle(
             $request,
-            'masterlist',
+            'masterlist', // connection for employee_masterlist
             'employee_masterlist',
             [
-                'conditions' => function ($query) {
+                'conditions' => function ($query) use ($adminEmpIDs) {
                     return $query
                         ->where('ACCSTATUS', 1)
-                        ->whereNot('EMPLOYID', 0);
+                        ->where('EMPLOYID', '!=', 0)
+                        ->whereNotIn(
+                            'DEPARTMENT',
+                            [
+                                'Human Resource',
+                                'MIS',
+                                'Equipment Engineering',
+                                'Process Engineering',
+                                'PPC',
+                                'Purchasing',
+                                'Facilities',
+                                'Logistics',
+                                'Store',
+                                'Finance',
+                                'Security',
+                                'Site and Support',
+                                'Engineering',
+                                'Site Services',
+                                'Operations',
+                                'Executive Office',
+                                'Facilities / MIS',
+                                'Director Corporate Admistration',
+                                'Chief Financial Officer',
+                            ]
+                        )
+
+                        // ->whereIn(
+                        //     'JOB_TITLE',
+                        //     [
+                        //         'Reject Controller 1',
+                        //         'Reject Controller 2',
+                        //         'Reject Controller 3',
+                        //     ]
+                        // )
+                        ->whereNotIn('EMPLOYID', $adminEmpIDs)
+                        ->OrderBy('EMPLOYID', 'DESC');
                 },
 
                 'searchColumns' => ['EMPNAME', 'EMPLOYID', 'JOB_TITLE', 'DEPARTMENT'],
             ]
         );
+
 
         // FOR CSV EXPORTING
         if ($result instanceof \Symfony\Component\HttpFoundation\StreamedResponse) {

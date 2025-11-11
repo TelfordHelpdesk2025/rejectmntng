@@ -9,22 +9,25 @@ class DashboardController extends Controller
 {
     public function index()
     {
+
+
         $connection = DB::connection('mysql');
 
         $summary = [
             // ✅ Total uploaded records
             'total_uploads' => $connection->table('reject_tbl_list')->count(),
 
-            // ✅ Total lots (lahat ng may lot_id)
-            'total_lots' => $connection->table('reject_tbl_list')
-                ->whereNotNull('lot_id')
+            // ✅ Total lots (PL1)
+            'total_lots_pl1' => $connection->table('reject_tbl_list')
+                ->whereNotNull('productline')
+                ->where('productline', 'PL1')
                 ->count(),
 
-            // ✅ Total unique productlines (handle null or empty)
-            'total_productlines' => $connection->table('reject_tbl_list')
-                ->select(DB::raw("COALESCE(NULLIF(TRIM(productline), ''), 'No Productline') as productline"))
-                ->distinct()
-                ->count('productline'),
+            // ✅ Total lots (PL6)
+            'total_lots_pl6' => $connection->table('reject_tbl_list')
+                ->whereNotNull('productline')
+                ->where('productline', 'PL6')
+                ->count(),
 
             // ✅ Latest upload date
             'latest_upload' => $connection->table('reject_tbl_list')->max('uploaded_date'),
@@ -42,27 +45,45 @@ class DashboardController extends Controller
                 ->count(),
         ];
 
-        // Only productlines that are not null or empty
-        $productline_totals = DB::table('reject_tbl_list')
+        // ✅ Get status counts per productline
+        $status_per_productline = DB::table('reject_tbl_list')
             ->whereNotNull('productline')
             ->where('productline', '!=', '')
-            ->select('productline', DB::raw('COUNT(*) as total'))
-            ->groupBy('productline')
-            ->pluck('total', 'productline')
-            ->toArray();
-
-        // Status count per productline (for Pie Chart)
-        $status_totals = DB::table('reject_tbl_list')
             ->whereNotNull('status')
             ->where('status', '!=', '')
-            ->select('status', DB::raw('COUNT(*) as total'))
-            ->groupBy('status')
-            ->pluck('total', 'status')
+            ->select('productline', 'status', DB::raw('COUNT(*) as total'))
+            ->groupBy('productline', 'status')
+            ->get();
+
+        // ✅ Rebuild structured array for chart
+        $chartData = [];
+        foreach ($status_per_productline as $row) {
+            $chartData[$row->status][$row->productline] = $row->total;
+        }
+
+        // ✅ Ensure missing combinations are filled with 0
+        $productlines = DB::table('reject_tbl_list')
+            ->whereNotNull('productline')
+            ->where('productline', '!=', '')
+            ->distinct()
+            ->pluck('productline')
             ->toArray();
 
-        $summary['productline_totals'] = $productline_totals;
-        $summary['status_totals'] = $status_totals;
+        foreach ($chartData as $status => &$data) {
+            foreach ($productlines as $pline) {
+                if (!isset($data[$pline])) {
+                    $data[$pline] = 0;
+                }
+            }
+        }
 
+        // ✅ Summary data
+        $summary['chart_data'] = $chartData;
+        $summary['productlines'] = $productlines;
+
+        // $emp_data = session('emp_data');
+
+        // dd($emp_data);
 
 
 

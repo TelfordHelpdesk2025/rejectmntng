@@ -17,7 +17,7 @@ class AuthMiddleware
     {
 
         // COMMENT OUT IF NO SPECIFIC DEPT OR JOB TITLE
-        if (session('emp_data') && !in_array(session('emp_data')['emp_dept'], ['Quality Assurance'])) {
+        if (session('emp_data') && !in_array(session('emp_data')['emp_dept'], ['Quality Assurance']) && !in_array(session('emp_data')['emp_system_role'], ['superadmin', 'admin'])) {
             return redirect()->route('unauthorized');
         }
 
