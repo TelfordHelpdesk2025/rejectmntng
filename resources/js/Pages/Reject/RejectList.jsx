@@ -109,7 +109,7 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
         const formData = new FormData();
         formData.append("file", selectedFile);
 
-        
+
 
         try {
             const response = await axios.post(route("reject.import"), formData, {
@@ -140,18 +140,18 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
             <Head title="Reject List" />
 
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold text-gray-700 animate-bounce">
+                <h1 className="text-2xl font-bold text-amber-500 animate-bounce">
                     <i className="fa-solid fa-microchip"></i> Reject List
                 </h1>
             {["Quality Assurance"].includes(emp_data?.emp_dept) && ["Senior QA Supervisor", "QA Supervisor", "QA Section Head", "QA Sr. Section Head", "QA Manager"].includes(emp_data?.emp_jobtitle) &&(
                 <div>
-                <button
+                {/* <button
                     onClick={() => setShowPivotModal(true)}
                     className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 mr-2"
                 >
                     <i className="fas fa-table mr-2"></i>
                     Pivot Report
-                </button>
+                </button> */}
 
                 <button
                     onClick={() => setImportModal(true)}
@@ -161,8 +161,8 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
                     Import Excel
                 </button>
 
-                
-                
+
+
                 </div>
             )}
             </div>

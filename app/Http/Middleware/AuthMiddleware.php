@@ -17,7 +17,15 @@ class AuthMiddleware
     {
 
         // COMMENT OUT IF NO SPECIFIC DEPT OR JOB TITLE
-        if (session('emp_data') && !in_array(session('emp_data')['emp_dept'], ['Quality Assurance']) && !in_array(session('emp_data')['emp_system_role'], ['superadmin', 'admin'])) {
+        if (
+            session('emp_data') &&
+            !in_array(session('emp_data')['emp_dept'], ['Quality Assurance']) &&
+            !in_array(session('emp_data')['emp_jobtitle'], ['Senior QA Supervisor', 'QA Supervisor', 'QA Section Head', 'QA Sr. Section Head', 'QA Manager']) &&
+            !in_array(session('emp_data')['emp_system_role'], ['superadmin', 'admin'])
+
+        ) {
+            session()->forget('emp_data');
+            session()->flush();
             return redirect()->route('unauthorized');
         }
 
