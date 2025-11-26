@@ -45,7 +45,7 @@ export default function Admin({ tableData, tableFilters, emp_data }) {
             <Head title="Manage RJ Controllers" />
 
             <div className="flex items-center justify-between mb-4">
-                <h1 className="text-2xl font-bold animate-bounce"><i className="fa-solid fa-users-gear mr-2"></i>RJ Controllers</h1>
+                <h1 className="text-2xl font-bold text-amber-500 animate-bounce"><i className="fa-solid fa-users-gear mr-2"></i>RJ Controllers</h1>
 
                 {/* {["superadmin", "admin"].includes(
                     emp_data?.emp_system_role
@@ -132,7 +132,7 @@ export default function Admin({ tableData, tableFilters, emp_data }) {
             {emp_data?.emp_system_role === "superadmin" && (
                 <option value="superadmin">Superadmin</option>
             )}
-          
+
 
           <option value="admin">Admin</option>
           <option value="Reject Controller">Reject Controller</option>

@@ -30,8 +30,7 @@ export default function NavLinks() {
                 ]}
 
             />
-
-            {["Senior QA Supervisor", "QA Supervisor", "QA Section Head", "QA Sr. Section Head", "QA Manager"].includes(emp_data?.emp_jobtitle) && (
+            {["superadmin", "admin"].includes(emp_data?.emp_system_role) && (
                 <div>
                     <SidebarLink
                         href={route("reject.summary.index")}
@@ -41,7 +40,7 @@ export default function NavLinks() {
                 </div>
             )}
 
-            {["superadmin", "admin"].includes(emp_data?.emp_system_role) && ["1328", "139"].includes(emp_data?.emp_id) && (
+            {["superadmin", "admin"].includes(emp_data?.emp_system_role) && (
                 <div>
                     <SidebarLink
                         href={route("admin")}

@@ -20,10 +20,23 @@ class RejectUploadController extends Controller
         return response()->json(['message' => 'Excel data imported successfully!']);
     }
 
+    // public function import(Request $request)
+    // {
+    //     $request->validate(['file' => 'required|mimes:xlsx,xls,csv']);
+    //     Excel::import(new RejectImport, $request->file('file'));
+    //     return back()->with('success', 'File imported successfully.');
+    // }
+
     public function import(Request $request)
     {
         $request->validate(['file' => 'required|mimes:xlsx,xls,csv']);
-        Excel::import(new RejectImport, $request->file('file'));
-        return back()->with('success', 'File imported successfully.');
+
+        $import = new RejectImport;
+        Excel::import($import, $request->file('file'));
+
+        return response()->json([
+            'success' => true,
+            'duplicateCount' => $import->duplicateCount
+        ]);
     }
 }

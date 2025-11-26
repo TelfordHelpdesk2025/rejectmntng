@@ -42,7 +42,7 @@ export default function Dashboard() {
   "#14b8a6", // teal
   "#a855f7", // violet
   "#f43f5e", // coral red
-  
+
 ];
 
 
@@ -79,14 +79,14 @@ export default function Dashboard() {
 };
 
 
-  
+
 
   return (
     <AuthenticatedLayout>
       <Head title="Dashboard" />
 
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-6">Dashboard Summary</h1>
+        <h1 className="text-2xl font-bold mb-6 text-amber-500 animate-bounce"><i className="fa-solid fa-chart-column mr-1"></i>Dashboard Summary</h1>
 
         {/* ✅ Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-8">

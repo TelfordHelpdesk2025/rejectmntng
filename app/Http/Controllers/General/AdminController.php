@@ -27,7 +27,14 @@ class AdminController extends Controller
             'mysql',
             'admin',
             [
-                'searchColumns' => ['EMPNAME', 'EMPLOYID', 'JOB_TITLE', 'DEPARTMENT'],
+
+                'conditions' => function ($query) {
+                    return $query
+                        ->whereNot('emp_role', 'superadmin')
+                        ->OrderBy('emp_role', 'ASC');
+                },
+
+                'searchColumns' => ['emp_id', 'emp_name', 'emp_role'],
             ]
         );
 

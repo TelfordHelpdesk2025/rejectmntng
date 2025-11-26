@@ -59,7 +59,7 @@ export default function Sidebar() {
                     ${
                         theme === "light"
                             ? "bg-amber-400 text-black"
-                            : "bg-amber-400 text-base-content"
+                            : "bg-amber-400 text-black"
                     }
                 `}
                 style={{
@@ -77,8 +77,12 @@ export default function Sidebar() {
                 </Link>
 
                 <Navigation />
-
+                <div className="text-center mt-2">
+                    <p className="text-black">Copyright © {new Date().getFullYear()}</p>
+                    <small className="text-gray-700">Created by: <b>Dharwines</b></small>
+                </div>
                 <ThemeToggler toggleTheme={toggleTheme} theme={theme} />
+
             </div>
         </div>
     );

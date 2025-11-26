@@ -55,6 +55,26 @@ class RejectListController extends Controller
         ]);
     }
 
+    // public function update(Request $request, $id)
+    // {
+    //     $validated = $request->validate([
+    //         'productline' => 'nullable|string|max:255',
+    //         'status' => 'nullable|string|max:255',
+    //         'remarks' => 'nullable|string|max:255',
+    //     ]);
+
+    //     // 🔹 Add audit fields
+    //     $validated['updated_by'] = session('emp_data')['emp_name'] ?? 'Unknown User';
+    //     $validated['updated_date'] = Carbon::now();
+
+    //     // 🔹 Perform update
+    //     DB::connection('mysql')->table('reject_tbl_list')
+    //         ->where('id', $id)
+    //         ->update($validated);
+
+    //     return redirect()->back()->with('success', 'Record updated successfully.');
+    // }
+
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -63,9 +83,17 @@ class RejectListController extends Controller
             'remarks' => 'nullable|string|max:255',
         ]);
 
+        // 🔹 Get IP of the user who performed the update
+        $ip = $request->ip();
+
+        // 🔹 Attempt to get hostname (may chance na hindi ma-resolve)
+        $host = gethostbyaddr($ip);
+
         // 🔹 Add audit fields
         $validated['updated_by'] = session('emp_data')['emp_name'] ?? 'Unknown User';
         $validated['updated_date'] = Carbon::now();
+        $validated['updated_ip'] = $ip;       // save IP
+        $validated['updated_host'] = $host;   // save Hostname
 
         // 🔹 Perform update
         DB::connection('mysql')->table('reject_tbl_list')
@@ -74,6 +102,7 @@ class RejectListController extends Controller
 
         return redirect()->back()->with('success', 'Record updated successfully.');
     }
+
 
     public function pivot(Request $request)
     {

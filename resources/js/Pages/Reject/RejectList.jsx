@@ -41,23 +41,25 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
     };
 
     // 🔹 Save changes (PUT request)
-    const handleSave = () => {
-        if (!selectedRow?.id) {
-            alert("Missing ID — cannot update.");
-            return;
-        }
+  const handleSave = () => {
+    if (!selectedRow?.id) {
+        alert("Missing ID — cannot update.");
+        return;
+    }
 
-        Inertia.put(route("reject.update", selectedRow.id), selectedRow, {
-            onSuccess: () => {
-                alert("Record updated successfully!");
-                setViewModal(false);
-            },
-            onError: (errors) => {
-                console.error(errors);
-                alert("Failed to update record.");
-            },
-        });
-    };
+    Inertia.put(route("reject.update", selectedRow.id), selectedRow, {
+        preserveScroll: true,
+        preserveState: true,
+        onSuccess: () => {
+            alert("Record updated successfully!");
+            setViewModal(false);
+        },
+        onError: () => {
+            alert("Failed to update record.");
+        }
+    });
+};
+
 
     // 🔹 Add action button to each row
     const rowsWithActions = tableData.data.map((row) => ({
@@ -65,7 +67,7 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
         actions: (
             <button
                 onClick={() => handleViewRow(row)}
-                className="bg-yellow-500 px-3 py-1 rounded hover:bg-yellow-600 hover:text-white hover:border-amber-800 border-2 border-black transition flex items-center"
+                className="bg-yellow-500 px-3 py-1 rounded hover:bg-yellow-600 text-black hover:text-white hover:border-white border-2 border-black transition flex items-center"
             >
                 <i className="fas fa-eye mr-1"></i>
                 View
@@ -97,43 +99,69 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
     };
 
     // 🟩 Import Excel with Loading + Alert
-    const handleImport = async () => {
-        if (!selectedFile) {
-            alert("Please select a file first.");
-            return;
-        }
+    const requiredColumns = [
+    "part_name",
+    "lot_id",
+    "qty",
+    "lot_type",
+    "station",
+    "prod_area",
+    "focus_group",
+    "package_name",
+    "lead_count",
+    "lot_status",
+    "sldt",
+    "strategy_code",
+    "stage_run_days",
+    "lot_entry_time_days",
+];
 
-        setIsLoading(true);
-        setAlertMessage(null);
+const handleImport = async () => {
+    if (!selectedFile) {
+        alert("Please select a file first.");
+        return;
+    }
 
-        const formData = new FormData();
-        formData.append("file", selectedFile);
+    // Tanungin muna si user
+    const confirmMessage = `Please confirm that your file contains the following columns:\n\n${requiredColumns.join(
+        ", "
+    )}\n\nDo you want to continue with the import?`;
+    if (!window.confirm(confirmMessage)) {
+        return; // Stop import kung user ay hindi pumayag
+    }
 
+    setIsLoading(true);
+    setAlertMessage(null);
 
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
-        try {
-            const response = await axios.post(route("reject.import"), formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+    try {
+        const response = await axios.post(route("reject.import"), formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+        });
 
-            setAlertType("success");
-            setAlertMessage(`✅ File imported successfully! ${response.data.duplicateCount ?? 0} duplicate rows skipped.`);
-            setSelectedFile(null);
+        setAlertType("success");
+        setAlertMessage(
+            `✅ File imported successfully! ${response.data.duplicateCount ?? 0} duplicate rows skipped.`
+        );
+        setSelectedFile(null);
 
-            // Auto close after 2s
-            setTimeout(() => {
-                setIsLoading(false);
-                setImportModal(false);
-                setAlertMessage(null);
-                window.location.reload();
-            }, 2000);
-        } catch (error) {
-            console.error(error);
-            setAlertType("error");
-            setAlertMessage("❌ Failed to import file.");
+        // Auto close after 5s
+        setTimeout(() => {
             setIsLoading(false);
-        }
-    };
+            setImportModal(false);
+            setAlertMessage(null);
+            window.location.reload();
+        }, 5000);
+    } catch (error) {
+        console.error(error);
+        setAlertType("error");
+        setAlertMessage("❌ Failed to import file.");
+        setIsLoading(false);
+    }
+};
+
 
     return (
         <AuthenticatedLayout>
@@ -344,86 +372,113 @@ export default function RejectList({ tableData, tableFilters, emp_data }) {
             )}
 
             {/* 🟢 Import Modal */}
-            {importModal && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md relative bg-gradient-to-r from-blue-200 to-green-400 text-gray-800">
-                        {alertMessage && (
-                            <div
-                                className={`absolute top-2 left-1/2 transform -translate-x-1/2 w-[90%] text-center px-4 py-2 rounded ${
-                                    alertType === "success"
-                                        ? "bg-green-100 text-green-700 border border-green-400"
-                                        : "bg-red-100 text-red-700 border border-red-400"
-                                }`}
-                            >
-                                {alertMessage}
-                            </div>
-                        )}
+{importModal && (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-lg relative bg-gradient-to-r from-blue-200 to-green-400 text-gray-800">
 
-                        <h2 className="text-lg font-semibold mb-4 mt-6 text-green-600">
-                            <i className="fas fa-file-excel text-green-600 mr-2"></i>
-                            Import Excel File
-                        </h2>
-
-                        <div
-                            className={`border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer transition ${
-                                isLoading ? "opacity-50 pointer-events-none" : "hover:bg-gray-50"
-                            }`}
-                            onDrop={handleDrop}
-                            onDragOver={handleDragOver}
-                            onClick={() => !isLoading && document.getElementById("excelInput").click()}
-                        >
-                            <input
-                                type="file"
-                                id="excelInput"
-                                accept=".xlsx,.xls,.csv"
-                                className="hidden"
-                                onChange={handleFileChange}
-                            />
-                            {selectedFile ? (
-                                <p className="text-gray-700">
-                                    <i className="fas fa-file-excel text-green-600 mr-2"></i>
-                                    {selectedFile.name}
-                                </p>
-                            ) : (
-                                <p className="text-gray-500">
-                                    Drag and drop Excel file here, or{" "}
-                                    <span className="text-blue-600 underline">browse</span>
-                                </p>
-                            )}
-                        </div>
-
-                        {isLoading && (
-                            <div className="flex items-center justify-center mt-4">
-                                <i className="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
-                                <span className="text-gray-700 animate-pulse">Importing... Please wait</span>
-                            </div>
-                        )}
-
-                        <div className="flex justify-end gap-3 mt-6">
-                            <button
-                                onClick={() => {
-                                    if (!isLoading) {
-                                        setImportModal(false);
-                                        setSelectedFile(null);
-                                        setAlertMessage(null);
-                                    }
-                                }}
-                                className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600 disabled:opacity-50"
-                                disabled={isLoading}
-                            >
-                                <i className="fas fa-times mr-1"></i> Cancel
-                            </button>
-                            <button
-                                onClick={handleImport}
-                                className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 disabled:opacity-50"
-                                disabled={!selectedFile || isLoading}
-                            >
-                                <i className="fas fa-upload mr-1"></i> Upload
-                            </button>
-                        </div>
-                    </div>
+            {alertMessage && (
+                <div
+                    className={`absolute top-2 left-1/2 transform -translate-x-1/2 w-[90%] text-center px-4 py-2 rounded ${
+                        alertType === "success"
+                            ? "bg-green-100 text-green-700 border border-green-400"
+                            : "bg-red-100 text-red-700 border border-red-400"
+                    }`}
+                >
+                    {alertMessage}
                 </div>
             )}
+
+            <h2 className="text-lg font-semibold mb-4 mt-6 text-green-600 flex items-center">
+                <i className="fas fa-file-excel text-green-600 mr-2"></i>
+                Import Excel File
+            </h2>
+
+            <div className="border border-gray-300 p-3 rounded bg-gray-50 text-gray-700 text-sm mb-4">
+                <strong className="text-lg text-red-600">📌 Read this before import:</strong>
+                <p className="mt-2 mb-2">
+                    Please ensure that your Excel/CSV file has <strong>these exact column headers</strong> in the first row. Columns must match exactly to avoid import errors.
+                </p>
+
+                {/* Scrollable list of columns */}
+                <div className="flex flex-wrap gap-2 mt-2 max-h-48 overflow-y-auto border p-2 rounded bg-white">
+                    {[
+                        "fiscal_week","adi_site","subsite","part_name","lot_id","qty","wip_date","start_date","cycle_time",
+                        "lot_type","station","prod_area","focus_group","process_group","tester","tester_group","uph",
+                        "package_name","bulk_data","generic_name","part_type","lead_count","lot_status","sldt","mes",
+                        "stage","part_class","reqd_time","lotentrytime","stage_start_time","CCD","strategy_code",
+                        "stage_run_days","lot_entry_time_days","handler_group","handler","tray","automotive",
+                        "stock_position","current_procedure","leadcon","last_evtime","tube_test"
+                    ].map((col, idx) => (
+                        <div key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                            {col}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* File Drop Area */}
+            <div
+                className={`border-2 border-dashed border-gray-400 rounded-lg p-6 text-center cursor-pointer transition ${
+                    isLoading ? "opacity-50 pointer-events-none" : "hover:bg-gray-50"
+                }`}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onClick={() => !isLoading && document.getElementById("excelInput").click()}
+            >
+                <input
+                    type="file"
+                    id="excelInput"
+                    accept=".xlsx,.xls,.csv"
+                    className="hidden"
+                    onChange={handleFileChange}
+                />
+                {selectedFile ? (
+                    <p className="text-gray-700 flex items-center justify-center">
+                        <i className="fas fa-file-excel text-green-600 mr-2"></i>
+                        {selectedFile.name}
+                    </p>
+                ) : (
+                    <p className="text-gray-500">
+                        Drag and drop Excel file here, or{" "}
+                        <span className="text-blue-600 underline">browse</span>
+                    </p>
+                )}
+            </div>
+
+            {isLoading && (
+                <div className="flex items-center justify-center mt-4">
+                    <i className="fas fa-spinner fa-spin text-blue-600 mr-2"></i>
+                    <span className="text-gray-700 animate-pulse">Importing... Please wait</span>
+                </div>
+            )}
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+                <button
+                    onClick={() => {
+                        if (!isLoading) {
+                            setImportModal(false);
+                            setSelectedFile(null);
+                            setAlertMessage(null);
+                        }
+                    }}
+                    className="px-4 py-2 text-white bg-red-500 rounded hover:bg-red-600 disabled:opacity-50"
+                    disabled={isLoading}
+                >
+                    <i className="fas fa-times mr-1"></i> Cancel
+                </button>
+                <button
+                    onClick={handleImport}
+                    className="px-4 py-2 bg-sky-600 text-white rounded hover:bg-sky-700 disabled:opacity-50"
+                    disabled={!selectedFile || isLoading}
+                >
+                    <i className="fas fa-upload mr-1"></i> Upload
+                </button>
+            </div>
+        </div>
+    </div>
+)}
+
 
 {showPivotModal && (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
